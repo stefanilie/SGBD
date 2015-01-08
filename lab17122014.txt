@@ -1,0 +1,98 @@
+--8
+create table empisi as select * from employees;
+
+create table deptisi as select * from departments;
+
+alter table deptisi
+add total_sal number;
+
+create or replace trigger pb8isi 
+after insert or delete or update of salary, department_id on empisi
+for each row
+begin
+if inserting then
+  update deptisi
+  set total_sal = total_sal+:new.salary
+  where department_id=:new.department_id;
+elsif deleting then
+  update deptisi
+  set total_sal = total_sal-:old.salary
+  where department_id=:old.department_id;
+elsif updating then
+  update deptisi
+  set total_sal = total_sal+:new.salary
+  where department_id=:new.department_id;
+  update deptisi
+  set total_sal = total_sal-:old.salary
+  where department_id=:old.department_id;
+end if;
+end;
+
+update deptisi x
+set total_sal=(select nvl(sum(salary), 0)
+from empisi where department_id=x.department_id);
+
+update empisi
+set department_id=30
+where department_id=20;
+
+rollback;
+--gargara
+update departments
+set department_id=500
+where department_id=130;
+--end gargara
+
+--11
+alter table empisi
+add foreign key(department_id) references deptisi(department_id);
+
+alter table deptisi
+add primary key(department_id);
+
+alter table empisi
+add primary key(employee_id);
+
+create or replace trigger pb11isi2
+after delete or update of department_id on deptisi for each row
+begin
+if deleting then
+  delete from empisi
+  where department_id=:old.department_id;
+elsif updating then update empisi
+  set department_id=:new.department_id
+  where department_id=:old.department_id;
+end if;
+end;
+
+delete from deptisi
+where department_id=90;
+
+rollback;
+
+update deptisi
+set department_id=310
+where department_id=30;
+
+
+
+--pbde2pct 
+--un sef for fiistersi toti subalternii lui
+--daca se schimba codul unui sef va modifica val respctia si pt subalterni
+
+alter table empisi add foreign key(manager_id) references empisi(employee_id)
+
+create or replace trigger pb11isi222
+after delete or update of employee_id on empisi for each row
+begin
+if deleting then
+  delete from empisi
+  where manager_id=:old.employee_id;
+elsif updating then update empisi
+  set manager_id=:new.employee_id
+  where manager_id=:old.employee_id;
+end if;
+end;
+
+delete from empisi
+where employee_id=100;

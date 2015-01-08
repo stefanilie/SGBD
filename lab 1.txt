@@ -1,0 +1,328 @@
+--28
+create table emp_isi as select * from employees;
+create table dept_isi as select * from departments;
+
+create or replace view viz28_isi as
+select employee_id cod, last_name nume, email mail,
+job_id codJ, hire_date data, e.department_name ndep, e.department_id depcod
+from emp_isi e join dept_isi d using (d.department_id = e.departrment_id);
+
+alter table emp_isi
+add constraint smahoz primary key (employee_id);
+
+alter table dept_isi
+add constraint moloz primary key (department_id);
+
+insert into viz28_isi(cod, nume, mail, codJ, data, depcod)
+values(254, 'nume', 'test', 'job', to_date('01-12-2014', 'dd-mm-yyyy'), 30);
+
+alter table emp_sil add constraint muci
+check(employee_id<10000);
+
+select * from
+(select last_name, employee_id, salary
+from employees
+order by salary desc)
+where rownum < 6;
+
+
+
+commit;
+
+
+
+A) sa se afiseze informatii despre angajatii care au avut un acelasi job ca si angajatul 102
+create 
+
+============================LAB2==========================
+
+--bloc de pl/sql care sa req suma nr intregi dintr-un interval dat
+set serveroutput on;
+declare 
+s number;
+
+begin
+select sum(rownum + &&a-1) into s
+from dual
+connect by &a + level - 1 <= &b-1;
+dbms_output.put_line(s);
+end;
+/ 
+undefine a;
+
+
+-- acum va avea functie
+set serveroutput on;
+create or replace function suma_sil03(a number, b number) return number is  
+s number :=0;
+
+begin
+select sum(rownum + a-1) into s
+from dual
+connect by a + rownum - 1 <= b-1;
+return s;
+end;
+/ 
+undefine a;
+
+--afisare de vector
+set serveroutput on;
+create or replace function suma_sil03(a number, b number) return number is  
+s number :=0;
+
+begin
+select sum(rownum + a-1) into s
+from dual
+connect by a + rownum - 1 <= b-1;
+return s;
+end;
+/ 
+undefine a;
+
+
+--crearea unui view si cred ca tema 
+
+create or replace view j1825 as
+select job_id 
+from employees
+where employee_id = 102
+union 
+select job_id 
+from job_history
+where employee_id=102;
+
+select * from j1825;
+
+==========================LAB 3, lab 1.pdf-----------------------------------
+http://www.reddit.com/r/soccer/comments/2j8noz/regarding_the_albania_serbia_game_todayfor_the/
+--15
+select *
+from employees s join works_on w on (s.employee_id=w.employee_id)
+where (select count(distinct project_manager)
+       from project join works_on using(project_id)
+       where project_manager <>102 and employee_id=s.employee_id)=0;
+       
+       
+--27
+update employees  
+set salary=default
+where employee_id=
+(select max(employee_id)
+from employees);
+
+rollback;
+
+alter table employees 
+modify (salary default 1000);
+
+
+--29
+select distinct employee_id
+from works_on w
+where not exists 
+(select project_id
+from project 
+where budget=10000
+minus 
+select project_id
+from works_on
+where employee_id=w.employee_id);
+
+
+--Laborator 1
+--1
+set serveroutput on;
+begin
+  dbms_output.put_line('Hello World');
+end;
+
+create or replace view test_isi as
+select *
+from locations join departments using(location_id)
+
+set serveroutput on;
+declare 
+linie_loc locations%rowtype;
+linie_dep departments%rowtype;
+
+begin
+  select locations.* into linie_loc
+  from locations join departments on locations.location_id = departments.department_id
+  where department_id = 30;
+  dbms_output.put_line('Orasul este '||linie_loc.city || ' ' || linie_dep.department_id);
+end;
+
+
+====================lab 4, lab1.pdf============================
+--7
+variable dep number;
+/
+begin
+select max(department_id) into :dep
+from departments;
+end;
+/
+print dep;
+/
+--8
+begin
+--:dep:=:dep+10
+insert into departments(department_id, department_name)
+values(:dep+10, 'dep_nou_isi');
+:dep:=:dep+10;
+end;
+/
+select *
+from departments
+where department_id =:dep;
+
+--9
+begin
+update departments
+set location_id=1100
+where department_id=:dep;
+end;
+/
+select *
+from departments
+where department_id =:dep;
+
+--10
+begin
+delete from departments
+where department_id=:dep;
+end;
+/
+select *
+from departments
+where department_id=:dep;
+
+commit;
+
+--4
+set serveroutput on
+declare
+cod employees.employee_id%type:=&cod;
+sal employees.salary%type;
+com number(2,2);
+begin
+select salary into sal
+from employees
+where employee_id = cod;
+if sal is null then
+  com:=0;
+elsif sal<1000 then
+  com:=0.1;
+elsif sal<=1500 then 
+  com:=0.15;
+else 
+  com:=0.2;
+end if;
+update employees
+set commission_pct=com
+where employee_id=cod;
+end;
+
+--5+6
+create table org_tab_isi
+(cod_tab number, text_tab varchar2(10));
+
+begin
+for i in 1..70 loop
+  if mod(i,2)=0 then
+    insert into org_tab_isi values(i, 'par');
+  else
+    insert into org_tab_isi values(i, 'impar');
+  end if;
+end loop;
+end;
+
+==========================================LAB5====================
+declare
+type vector is array(100) of number;
+type tab_indexat is table of number index by binary_integer;
+type tab_imbricat is table of number;
+cod tab_imbricat:=tab_imbricat();
+j number;
+--cod vector:=vector(1,2,3);
+begin
+--cod.extend;
+select employee_id bulk collect into cod
+from employees;
+dbms_output.put_line(cod.count);
+--valabil pt vector cod.trim(3); 
+cod.delete(cod.first);
+j:=cod.first;
+cod.delete(201);
+cod.trim(7);
+
+for i in 1..cod.count loop
+dbms_output.put_line( cod(j));
+j:=cod.next(j);
+exit when j=cod.last;
+end loop;
+dbms_output.put_line(cod.count);
+end;
+
+
+--problema 1, lab2
+declare 
+type colectie is record(
+cod employees.employee_id%type,
+nume varchar2(20),
+sal number,
+dep number);
+v_colectie colectie;
+
+begin
+delete from emp
+where employee_id=200
+returning employee_id, last_name, salary, department_id into v_colectie;
+dbms_output.put_line(v_colectie.sal||' '||v_colectie.nume);
+end;
+
+
+--problema 2
+declare 
+type colectie is record(
+cod departments.department_id%type,
+nume varchar2(20),
+loc number,
+sef number);
+v_colectie colectie;
+
+begin
+v_colectie.cod:=369;
+v_colectie.nume:='dep_nou_isi';
+insert into dept
+values v_colectie;
+v_colectie.cod:=369;
+v_colectie.nume:='dep_nou_isi_nou';
+update dept
+set row = v_colectie
+where department_id=v_colectie.cod;
+end;
+/
+rollback;
+
+create or replace type colectie is record(
+cod departments.department_id%type,
+nume varchar2(20),
+loc number,
+sef number);
+
+--ceva, nu stiu ce, ma doare in pula
+declare 
+v_colectie colectie;
+begin
+v_colectie:=colectie(350, 'moloz', null, null);
+end;
+
+
+
+----tema
+3 var:
+un vector
+tabel indexat, si unu imbricat - cel putin 100 val in fiecare, "sa fie popiulati"
+stergeti campurile care sunt numere prime, val prime
+afisati

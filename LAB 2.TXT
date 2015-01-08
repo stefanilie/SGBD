@@ -1,0 +1,101 @@
+--17 lab 2
+create table dept_isi4 as select * from departments;
+
+create or replace type cod_job_isi4 is object
+(cod number,
+ job varchar2(10));
+ 
+create or replace type tab_cod_job_isi4 is table 
+of cod_job_isi4;
+
+alter table dept_isi4 add info_isi tab_cod_job_isi4
+nested table info_isi store as stefanilie_isi;
+
+
+declare
+lista tab_cod_job_isi4;
+
+begin
+for d in (select * from dept_isi2) loop
+  select employee_id, job_id bulk collect into lista
+  from employees
+  where department_id=d.department_id;
+  
+  update dept_isi
+  set info_isi = lista
+  where department_id=d.department_id;
+end loop;
+
+for d in (select * from dept_isi4) loop 
+  dbms_output.put_line('');
+  dbms_output.put_line(d.department_name||': ');
+  for ang in 1..d.info_isi.count loop
+    dbms_output.put_line('('||d.info_isi(ang).cod||', '|| d.info_isi(ang).job||')');
+  end loop;
+end loop;
+
+end;
+/
+commit
+
+--nu stiu ce se inpampla
+declare
+r_id varchar2(20);
+sir varchar2(20);
+linie emp7%rowtype;
+
+begin
+insert into emp7(employee_id, last_name, email, hire_date, job_id)
+values(799, 'nume799', 'email799', sysdate, 'SA_REP')
+returning rowid into r_id;
+dbms_output.put_line(r_id);
+
+update emp7
+set salary=1.3*salary
+where rowid=r_id
+returning last_name||first_name into sir;
+dbms_output.put_line(sir);
+delete from emp7
+where rowid=r_id
+returning employee_id, first_name, last_name, email, phone_number, hire_date, job_id, salary, commission_pct, 
+manager_id, department_id into linie;
+dbms_output.put_line(linie.email||linie.hire_date);
+end;
+/
+commit
+
+--20 lab 2
+declare
+type tab_imb_isi is table of elployees%eowtype;
+type tab_index_isi is table of tab_imb_isi index by binary_integer;
+sefi tab_index_isi;
+cod_max number;
+
+begin
+for sef in (select distinct manager_id bulk collect into sefi
+            from employees 
+            where manager_id is not null) loop
+--sefi(sef,manager_id) lista subalternilor
+--sefi(sef,manager_id) este un tablel imbricat, deci extenmd;
+
+select max(employee_id) into cod_max
+from employees 
+start with manager_id = sef.manager_id
+connect by prior manager_id=employee_id;
+sefi(sef.manager_id):=tab_imb_isi();
+sefi(sef.manager_id).extend(cod_max);
+
+for sub in (select * 
+            from employees 
+            start with manager_id = sef.manager_id
+            connect by prior manager_id=employee_id) loop
+    sefi(sef.manager_id)(sub.employee_id):=sub;
+end loop;
+end loop;
+dbms_output.put_line(sefi(100).count);
+end;
+
+
+
+
+

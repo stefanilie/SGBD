@@ -1,0 +1,101 @@
+set serveroutput on;
+declare
+pnume varchar2(20);
+  procedure pb2(pid number, pcomission number, presult out varchar) is
+  nr number;
+  eroare exception;
+  begin
+    if pcomission is null then
+    select count(employee_id) into nr
+    from employees
+    where employee_id = pid;
+    if nr=0 then
+      raise eroare;
+    end if;
+      select last_name into presult
+      from employees
+      where employee_id = pid;
+    else
+      select last_name into presult
+      from employees
+      where commission_pct = pcomission and salary=(select max(salary) from employees where commission_pct=pcomission);
+    end if;
+    exception
+      when eroare then
+        raise_application_error(-20710, 'angajatul nu exista');
+  end;
+begin
+  pb2(745,null,pnume);
+  dbms_output.put_line(pnume);
+end;
+
+
+
+
+
+--8
+create or replace procedure pb8(sal out number) as
+begin
+  select avg(salary)into sal
+  from employees;
+end;
+
+variable x number
+execute pb8(:x); --:x pt ca x e var gazda
+print x;
+
+
+--10
+create or replace procedure pb10(p_id number, sal out number, titlu out varchar2)is
+nr number;
+begin
+  select count(employee_id) into nr
+    from employees
+    where employee_id = p_id;
+    if nr=0 then
+      raise_application_error(-20345, 'Ang nu exista');
+    end if;
+    select salary, job_title into sal, titlu
+    from employees join jobs using(job_id)
+    where employee_id=p_id;
+end;
+
+
+variable sal number;
+variable titlu varchar2(50);
+execute pb10(186,:sal,:titlu);
+print sal;
+print titlu;
+
+--12
+declare
+function medie(dep number, job varchar2) return number is
+sal employees.salary%type;
+begin
+  select nvl(avg(salary), 0) into sal
+  from employees
+  where department_id=dep and job_id=job;
+  return sal;
+end;
+function medie(dep number) return number is
+sal employees.salary%type;
+begin
+  select nvl(avg(salary), 0) into sal
+  from employees
+  where department_id=dep;
+  return sal;
+end;
+begin
+  dbms_output.put_line(medie(50)||' '||medie(50,'ST_CLERK'));
+end;
+
+--factorial
+create or replace function factorial(nr number) return number is
+begin
+  if(nr<2) then return 1;
+  else return nr*factorial(nr-1);
+  end if;
+end;
+
+select factorial(3)
+from dual;
