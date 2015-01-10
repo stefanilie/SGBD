@@ -9,4 +9,5 @@ select l.COUNTRY_ID, count(e.employee_id) from locations l join departments d on
 select first_name, salary from employees where rownum <=5 order by salary DESC;
 
 --3 Sã se obþinã numãrul de angajaþi care au mai avut cel puþin trei job-uri, luându-se în considerare ºi job-ul curent. 
-select e.employee_id from JOB_HISTORY j join employees e on j.EMPLOYEE_ID = e.EMPLOYEE_ID group by e.employee_id; --not done
+select e.employee_id, j.START_DATE from JOB_HISTORY j join employees e on j.EMPLOYEE_ID = e.EMPLOYEE_ID group by e.employee_id, j.START_DATE; --not done
+select e.employee_id, j.start_date, j.JOB_ID from employees e,JOB_HISTORY j order by e.employee_id;
