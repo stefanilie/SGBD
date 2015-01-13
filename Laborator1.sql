@@ -42,3 +42,38 @@ elsif nr between 10 and 30 then
 else
   dbms_output.put_line('Departamentul '||a||' este mic');
 end;
+
+
+/*--6 */
+declare 
+&zi varchar(20);
+begin
+  case lower(&zi)
+    when 'luni' then dbms_output.put_line('Ai scris luni');
+    when 'marti' then dbms_output.put_line('Ai scris luni');
+    when 'miercuri' then dbms_output.put_line('Ai scris luni');
+    when 'joi' then dbms_output.put_line('Ai scris luni');
+    when 'vineri' then dbms_output.put_line('Ai scris luni');
+    when 'sambata' then dbms_output.put_line('Ai scris luni');
+    when 'duminica' then dbms_output.put_line('Ai scris luni');
+    else dbms_output.put_line('Nu exista ziua introdusa');
+  end case;
+end;
+
+undefine zi;
+
+--8 n!
+declare 
+  nr number;
+  aux number;
+  sum_ number :=1;
+begin
+   nr := &nr;
+   aux := nr;
+   while aux>0 loop
+    sum_ := aux*sum_;
+    aux := aux-1;
+   end loop;
+   dbms_output.put_line('Factorialul lui '||nr||' este '||sum_);
+end;
+/
